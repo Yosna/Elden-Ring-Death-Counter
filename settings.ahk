@@ -93,10 +93,7 @@ EncodeHex(data) {
 }
 
 WaitForCharacterToLoad(game) {
-    Loop {
-        if RetrieveMemory(game, game.offsets.deaths) {
-            break ; stop waiting once a character is found
-        }
+    While !RetrieveMemory(game, game.offsets.character) {
         Sleep(1000)
     }
 }
