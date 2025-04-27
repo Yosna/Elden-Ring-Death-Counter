@@ -29,8 +29,6 @@ DetectGame(game) {
     if pid := ProcessExist(game.exe) {
         game.pid := pid
         game.baseAddress := GetBaseAddress(pid)
-        game.pointer := game.pointer
-        game.offsets := game.offsets
         game.settings := game.userDir . "\settings.ini"
     }
 
