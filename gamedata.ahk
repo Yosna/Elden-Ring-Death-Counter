@@ -49,7 +49,7 @@ ValidateGame(game) {
         warning := "Unable to detect Elden Ring.`n`n"
             . "Press OK to launch the game with Easy Anti-Cheat`n"
             . "disabled, or press Cancel to close the program."
-        WarningBox(warning, game.name . " not found", () => BypassEAC(game))
+        WarningBox(warning, "Elden Ring not found", () => BypassEAC(game))
     }
 
     WinGetPos(&game.x, &game.y, &game.w, &game.h, hwnd)
