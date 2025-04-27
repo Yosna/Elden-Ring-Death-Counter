@@ -67,7 +67,6 @@ BypassEAC(game) {
     DllCall("SetEnvironmentVariable", "Str", "SteamAppId", "Str", "1245620")
     Run('cmd.exe /c ""' . path . '""', game.gameDir , "Hide", &pid)
     
-    time := A_TickCount
     while (A_TickCount - time < 5000) {
         if ProcessExist(game.exe) {
             break
