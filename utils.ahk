@@ -5,9 +5,14 @@
 ; terminates the instance, while "/reload" ensures it's handled as the current session since it isn't a switch
 ; this is so ShowHotkeys() is only shown on a new session, as it might be a nuisance to close it every reload.
 ReloadProgram := () => Run(A_IsCompiled
-    ? A_ScriptFullPath " /reload /restart"                 ; .exe
-    : A_AhkPath " '" A_ScriptFullPath "' /reload /restart" ; .ahk
+    ? A_ScriptFullPath . " /reload /restart"                   ; .exe
+    : A_AhkPath . " " . A_ScriptFullPath . " /reload /restart" ; .ahk
 )
+
+WaitToContinue(ms, Callback) {
+    Sleep(ms)
+    Callback()
+}
 
 ShowHotkeys() {
     MsgBox(" "
@@ -30,6 +35,6 @@ TempMsgBox(text, timeout := 3000) {
     SetTimer(() => message.Destroy(), -timeout)
 }
 
-WarningBox(message, title := "Warning", Accept := (*) => "") {
-    MsgBox(message, title, "OKCancel Icon!") = "OK" ? Accept() : ExitApp()
+WarningBox(message, title := "Warning", Callback := (*) => "") {
+    MsgBox(message, title, "OKCancel Icon!") = "OK" ? Callback() : ExitApp()
 }
