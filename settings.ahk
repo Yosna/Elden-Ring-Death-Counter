@@ -6,9 +6,9 @@ SaveSettings(game) {
         DirCreate(game.gameDir)
     }
 
-    character := EncodeHex(JSON.stringify(GetCharacter(game)))
-    entry := character . "=" . game.deathsOffset
-    counters := ""
+    local character := EncodeHex(JSON.stringify(GetCharacter(game)))
+    local entry := character . "=" . game.deathsOffset
+    local counters := ""
 
     for line in StrSplit(FileRead(game.settings), "`n") {
         line := Trim(line, "`r`n`t")
@@ -17,7 +17,7 @@ SaveSettings(game) {
             continue ; skip keys and empty lines
         }
 
-        hex := StrSplit(line, "=")[1]
+        local hex := StrSplit(line, "=")[1]
         
         if hex == character || hex == game.loadedHex {
             continue ; skip duplicates and the current loaded character
@@ -46,7 +46,7 @@ LoadSettings(game) {
         return
     }
 
-    character := EncodeHex(JSON.stringify(GetCharacter(game)))
+    local character := EncodeHex(JSON.stringify(GetCharacter(game)))
 
     for line in StrSplit(FileRead(game.settings), "`n") {
         line := Trim(line, "`r`n`t")
@@ -55,7 +55,7 @@ LoadSettings(game) {
             continue ; skip keys and empty lines
         }
 
-        hex := StrSplit(line, "=")[1]
+        local hex := StrSplit(line, "=")[1]
 
         if hex == character {
             game.deathsOffset := StrSplit(line, "=")[2]
@@ -86,14 +86,17 @@ GetCharacter(game) {
 }
 
 EncodeHex(data) {
-    result := ""
-    for _, char in StrSplit(data)
+    local result := ""
+
+    for _, char in StrSplit(data) {
         result .= Format("{:02X}", Ord(char))
+    }
+
     return result
 }
 
 WaitForCharacterToLoad(game) {
     While !RetrieveMemory(game, game.offsets.character) {
-        Sleep(1000)
+        Sleep(TICK_INTERVAL)
     }
 }
