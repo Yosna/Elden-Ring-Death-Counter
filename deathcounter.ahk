@@ -1,67 +1,93 @@
 ﻿#Requires AutoHotkey v2.0
 #SingleInstance Force
 
+#Include constants.ahk
 #Include utils.ahk
 #Include settings.ahk
 
+F8::HideOverlay(overlay)
+F12::ReloadProgram
+
+global window, overlay
+
 CreateWindow() {
+    global window
+    local font, options
+
     window := Gui(, "ER Death Counter")
-    window.BackColor := "3D3D3D"
-    window.size := "w264 h480"
+    window.BackColor := COLOR_DARK_GREY
     window.OnEvent("Close", (*) => ExitApp())
 
     ; stats for the detected character
-    window.SetFont("s11 cWhite", "Cascadia Code")
-    window.stats := window.AddText("x42 y10 " . window.size)
+    font := FormatFont(FONT_SIZE_11, COLOR_WHITE)
+    options := FormatOptions(WINDOW_STATS_X, WINDOW_STATS_Y, WINDOW_WIDTH, WINDOW_HEIGHT)
+    window.SetFont(font, "Cascadia Code")
+    window.stats := window.AddText(options)
 
     ; input field to change the death counter
-    window.SetFont("s11 cBlack", "Cascadia Code")
-    window.deathInput := window.AddEdit("x49 y420 w80 h25 Number Right")
-    window.deathInput.Color := "White"
+    font := FormatFont(FONT_SIZE_11, COLOR_WHITE)
+    options := FormatOptions(WINDOW_INPUT_X, WINDOW_INPUT_Y, WINDOW_INPUT_W, WINDOW_INPUT_H, "Number Right")
+    window.SetFont(font, "Cascadia Code")
+    window.deathInput := window.AddEdit(options)
+    window.deathInput.Color := COLOR_WHITE
 
     ; button to set the death counter
-    window.SetFont("s8 cWhite", "Cascadia Code")
-    window.deathSet := window.AddButton("x135 y420 w80 h25", "Set Deaths")
+    font := FormatFont(FONT_SIZE_8, COLOR_WHITE)
+    options := FormatOptions(WINDOW_BUTTON_X, WINDOW_BUTTON_Y, WINDOW_BUTTON_W, WINDOW_BUTTON_H)
+    window.SetFont(font, "Cascadia Code")
+    window.deathSet := window.AddButton(options, "Set Deaths")
     window.deathSet.OnEvent("Click", (*) => SetDeathCounter(window.deathInput.Value))
 
     ; this helps prevent elements from disappearing when the window is updated
-    window.unfocus := window.AddText("x0 y0 w0 h0")
+    window.unfocus := window.AddText()
 
-    window.Show(window.size)
-
-    return window
+    options := FormatOptions(,,WINDOW_WIDTH, WINDOW_HEIGHT)
+    window.Show(options)
 }
 
 CreateOverlay() {
+    global overlay
+    local font, options
+
     overlay := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    overlay.BackColor := "Black"
+    overlay.BackColor := COLOR_BLACK
 
-    ; position of the overlay
-    overlay.x := Floor(game.x + (game.w * 0.866)) ; lower number moves left, higher number moves right
-    overlay.y := Floor(game.y + (game.h * 0.899)) ; lower number moves up, higher number moves down
-    overlay.pos := "x" . overlay.x . " y" . overlay.y
-
-    ; size of the overlay
-    overlay.w := "w" . Floor(game.w * 0.100) ; width - raise this number if text wrapping occurs
-
-    ; settings string for the overlay
-    overlay.settings := overlay.pos . " " . overlay.w . " NoActivate"
-
+    ; options for the overlay
+    overlay.x := Floor(game.x + (game.w * OVERLAY_X_RATIO)) 
+    overlay.y := Floor(game.y + (game.h * OVERLAY_Y_RATIO)) 
+    overlay.w := Floor(game.w * OVERLAY_WIDTH) 
+    
     ; add the text and make it click-and-draggable
-    overlay.SetFont("s18 cWhite")
-    overlay.deaths := overlay.AddText(overlay.w)
+    font := FormatFont(FONT_SIZE_18, COLOR_WHITE)
+    options := FormatOptions(,, overlay.w)
+    overlay.SetFont(font)
+    overlay.deaths := overlay.AddText(options, "Deaths: 0")
     overlay.deaths.OnEvent("Click", (*) => PostMessage(0xA1, 2,,, "ahk_id " . overlay.Hwnd))
 
-    overlay.Show(overlay.settings)
+    options := FormatOptions(overlay.x, overlay.y, overlay.w,, "NoActivate")
+    overlay.Show(options)
 
     ; make the background color transparent
-    WinSetTransColor("Black", "ahk_id " . overlay.Hwnd)
+    WinSetTransColor(COLOR_BLACK, "ahk_id " . overlay.Hwnd)
+}
 
-    return overlay
+FormatOptions(x := "", y := "", w := "", h := "", extra := "") {
+    local options := "" 
+        . (x ? " x" . x : "") . (y ? " y" . y : "")
+        . (w ? " w" . w : "") . (h ? " h" . h : "")
+        . (extra ? " " . extra : "")
+
+    return RegExReplace(options, "^\s+") ; removes leading spaces
+}
+
+FormatFont(s := "", c := "") {
+    local font := (s ? " s" . s : "") . (c ? " c" . c : "")
+
+    return RegExReplace(font, "^\s+") ; removes leading spaces
 }
 
 SetDeathCounter(counter) {
-    deaths := RetrieveMemory(game, game.offsets.deaths)
+    local deaths := RetrieveMemory(game, game.offsets.deaths)
     game.deathsOffset := deaths - (!isNumber(counter) || (counter > deaths) ? deaths : counter)
     window.deathInput.Value := ""
 
@@ -69,8 +95,8 @@ SetDeathCounter(counter) {
 }
 
 Update() {
-    deathsTotal := RetrieveMemory(game, game.offsets.deaths)
-    deaths := deathsTotal - game.deathsOffset
+    local deathsTotal := RetrieveMemory(game, game.offsets.deaths)
+    local deaths := deathsTotal - game.deathsOffset
 
     ; if deaths fall below 0 or change by more than 1, assume the
     ; user is on the title screen or loaded a different character
@@ -78,13 +104,14 @@ Update() {
         ReloadSettings(game, overlay)
     }
 
-    content := "Deaths: " . deaths
-    updateContent := overlay.deaths.Value != content
+    local content := "Deaths: " . deaths
+    local updateContent := overlay.deaths.Value != content
+
     if (updateContent) {
         overlay.deaths.Value := content
     }
 
-    stats := CharacterData(game)
+    local stats := CharacterData(game)
 
     if (window.stats.Value != stats) {
         window.stats.Value := stats
@@ -99,15 +126,15 @@ Update() {
     }
 }
 
-F8::HideOverlay(overlay)
-F12::ReloadProgram
+InitializeGUI() {
+    DetectGame(game)
+    CreateWindow()
+    CreateOverlay()
+    SetTimer(() => Update(), TICK_INTERVAL)
 
-; set the timer to update the overlay once the game is detected
-DetectGame(game) ? SetTimer(() => Update(), 1000) : ""
+    ; show the hotkeys only if a new session is launched 
+    ; the delay is to ensure the hotkeys appear on top of the window
+    (!A_Args.Length) ? SetTimer(() => ShowHotkeys(), -HOTKEY_INTERVAL) : ""
+}
 
-; show the hotkeys only if a new session is launched 
-; the delay is to ensure the hotkeys appear on top of the window
-(!A_Args.Length) ? SetTimer(() => ShowHotkeys(), -2000) : ""
-
-window := CreateWindow()
-overlay := CreateOverlay()
+InitializeGUI()
