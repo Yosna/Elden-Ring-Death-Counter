@@ -1,0 +1,45 @@
+name: Build and Release
+
+on:
+    push:
+      tags:
+        - 'v*.*.*'
+    workflow_dispatch: 
+
+jobs:
+  compile:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Make dist folder
+        run: mkdir dist
+
+      - name: Debug workspace
+        shell: cmd
+        run: dir /s /b .\   
+
+      - name: Compile ER Death Counter.exe
+        shell: cmd
+        run: |
+            compiler\Ahk2Exe.exe ^
+            /in deathcounter.ahk ^
+            /out "dist\ER Death Counter.exe" ^
+            /base compiler\AutoHotkey64.exe ^
+            /icon assets\gold_circle.ico ^
+            
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Upload EXE to Release
+        uses: softprops/action-upload-release-asset@v1
+        with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: dist/ER Death Counter.exe
+            asset_name: ER Death Counter.exe
+            asset_content_type: application/octet-stream
