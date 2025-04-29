@@ -1,5 +1,8 @@
 name: Build and Attach EXE to Release
 
+permissions:
+  contents: write
+
 on:
   release:
     types: [published]
@@ -25,6 +28,8 @@ jobs:
 
       - name: Upload EXE to this Release
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: dist/ER Death Counter.exe
