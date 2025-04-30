@@ -25,4 +25,4 @@ A transparent on-screen death counter for Elden Ring. It reads your character’
 3. Double click **deathcounter.ahk** to run the script
 
 ## License
-- GNU General Public License v3.0 ([LICENSE](https://github.com/Yosna/Elden-Ring-Death-Counter/blob/main/LICENSE))
+- GNU General Public License v3.0; see [LICENSE](https://github.com/Yosna/Elden-Ring-Death-Counter/blob/main/LICENSE)
