@@ -101,6 +101,7 @@ Update() {
     ; if deaths fall below 0 or change by more than 1, assume the
     ; user is on the title screen or loaded a different character
     if deaths < 0 || Abs(deathsTotal - game.deathsTotal) > 1 {
+        game.deathsTotal := deathsTotal
         ReloadSettings(game, overlay)
     }
 

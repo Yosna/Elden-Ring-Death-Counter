@@ -66,7 +66,6 @@ LoadSettings(game) {
 }
 
 ReloadSettings(game, overlay) {
-    game.deathsTotal := 0
     game.deathsOffset := 0
     game.loadedHex := 0
     overlay.deaths.Value := "Deaths: 0"
